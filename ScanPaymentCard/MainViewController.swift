@@ -112,7 +112,7 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
         let scale = CGAffineTransform.identity.scaledBy(x: self.previewLayer.frame.width, y: self.previewLayer.frame.height)
         let rectangleOnScreen = rectangleObservation.boundingBox.applying(scale).applying(transform)
         let boundingBoxPath = CGPath(rect: rectangleOnScreen, transform: nil)
-
+        
         let shapeLayer = CAShapeLayer()
         shapeLayer.path = boundingBoxPath
         shapeLayer.fillColor = UIColor.clear.cgColor
@@ -122,7 +122,19 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
         return shapeLayer
     }
     
-
+    
+    private func trackPaymentCard(for observation: VNRectangleObservation, in frame: CVImageBuffer) -> VNRectangleObservation? {
+        let request = VNTrackRectangleRequest(rectangleObservation: observation)
+        request.trackingLevel = .fast
+        
+        try? self.requestHandler.perform([request], on: frame)
+        
+        guard let trackedRectangle = (request.results as? [VNRectangleObservation])?.first else {
+            return nil
+        }
+        return trackedRectangle
+    }
+    
     
 }
 
