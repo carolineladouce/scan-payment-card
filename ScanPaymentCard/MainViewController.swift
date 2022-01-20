@@ -54,9 +54,11 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
         self.captureSession.addInput(cameraInput)
     }
     
+    
     private func addPreviewLayer() {
         self.view.layer.addSublayer(self.previewLayer)
     }
+    
     
     private func addVideoOutput() {
         self.videoOutput.videoSettings = [(kCVPixelBufferPixelFormatTypeKey as NSString) : NSNumber(value: kCVPixelFormatType_32BGRA)] as [String : Any]
@@ -67,6 +69,7 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
               connection.isVideoOrientationSupported else { return }
         connection.videoOrientation = .portrait
     }
+    
     
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let frame = CMSampleBufferGetImageBuffer(sampleBuffer) else {
@@ -110,6 +113,7 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
         return rectangle
     }
     
+    
     private func createRectangleDrawing(_ rectangleObservation: VNRectangleObservation) -> CAShapeLayer {
         let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -self.previewLayer.frame.height)
         let scale = CGAffineTransform.identity.scaledBy(x: self.previewLayer.frame.width, y: self.previewLayer.frame.height)
@@ -138,6 +142,7 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
         return trackedRectangle
     }
     
+    
     private func handleObservedPaymentCard(_ observation: VNRectangleObservation, in frame: CVImageBuffer) {
         if let trackedPaymentCardRectangle = self.trackPaymentCard(for: observation, in: frame) {
             DispatchQueue.main.async {
@@ -150,7 +155,9 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
     }
     
     
-    
+    private func extractPaymentCardNumber(frame: CVImageBuffer, rectangle: VNRectangleObservation) -> String? {
+        
+    }
     
     
     
