@@ -25,6 +25,9 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
     
     private var rectangleDrawing: CAShapeLayer?
     
+    private var paymentCardRectangleObservation: VNRectangleObservation?
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -75,14 +78,14 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
         
         DispatchQueue.main.async {
             self.rectangleDrawing?.removeFromSuperlayer()
-            
-            if let paymentCardRectangle = self.detectPaymentCard(frame: frame) {
-                self.rectangleDrawing = self.createRectangleDrawing(paymentCardRectangle)
-                self.view.layer.addSublayer(self.rectangleDrawing!)
-            }
+        }
+        
+        if let paymentCardRectangleObservation = self.paymentCardRectangleObservation {
+            self.handleObservedPaymentCard(paymentCardRectangleObservation, in: frame)
+        } else if let paymentCardRectangleObservation = self.detectPaymentCard(frame: frame) {
+            self.paymentCardRectangleObservation = paymentCardRectangleObservation
         }
     }
-    
     
     
     private func detectPaymentCard(frame: CVImageBuffer) -> VNRectangleObservation? {
@@ -134,6 +137,22 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
         }
         return trackedRectangle
     }
+    
+    private func handleObservedPaymentCard(_ observation: VNRectangleObservation, in frame: CVImageBuffer) {
+        if let trackedPaymentCardRectangle = self.trackPaymentCard(for: observation, in: frame) {
+            DispatchQueue.main.async {
+                self.rectangleDrawing = self.createRectangleDrawing(trackedPaymentCardRectangle)
+                self.view.layer.addSublayer(self.rectangleDrawing!)
+            }
+        } else {
+            self.paymentCardRectangleObservation = nil
+        }
+    }
+    
+    
+    
+    
+    
     
     
 }
