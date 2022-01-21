@@ -171,6 +171,22 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
             // No text detected
             return nil
         }
+        
+        let digitsRecognized = texts
+            .flatMap({ $0.topCandidates(10).map({ $0.string }) })
+            .map({ $0.trimmingCharacters(in: .whitespaces) })
+            .filter({ CharacterSet.decimalDigits.isSuperset(of: CharacterSet(charactersIn: $0)) })
+        
+        let _16digits = digitsRecognized.first(where: { $0.count == 16})
+        let has16Digits = _16digits != nil
+        
+        let _4digits = digitsRecognized.filter({ $0.count == 4 })
+        let has4sections4digits = _4digits.count == 4
+        
+        
+        
+        
+        
     }
     
     
