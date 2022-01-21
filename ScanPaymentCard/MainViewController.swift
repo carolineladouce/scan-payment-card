@@ -183,7 +183,10 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
         let _4digits = digitsRecognized.filter({ $0.count == 4 })
         let has4sections4digits = _4digits.count == 4
         
-        
+        let digits = _16digits ?? _4digits.joined()
+        let digitsIsValid = (has16Digits || has4sections4digits) &&
+        self.checkDigits(digits)
+        return digitsIsValid ? digits : nil
     }
     
     
