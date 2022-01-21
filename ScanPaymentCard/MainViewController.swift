@@ -156,7 +156,21 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
     
     
     private func extractPaymentCardNumber(frame: CVImageBuffer, rectangle: VNRectangleObservation) -> String? {
+        let cardPositionInImage = VNImageRectForNormalizedRect(rectangle.boundingBox, CVPixelBufferGetWidth(frame), CVPixelBufferGetHeight(frame))
+        let ciImage = CIImage(cvImageBuffer: frame)
+        let croppedImage = ciImage.cropped(to: cardPositionInImage)
         
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = .accurate
+        request.usesLanguageCorrection = false
+        
+        let stillImageRequestHandler = VNImageRequestHandler(ciImage: croppedImage, options: [:])
+        try? stillImageRequestHandler.perform([request])
+        
+        guard let texts = request.results as? [VNRecognizedTextObservation], texts.count > 0 else {
+            // No text detected
+            return nil
+        }
     }
     
     
