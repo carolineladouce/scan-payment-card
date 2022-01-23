@@ -27,6 +27,16 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
     
     private var paymentCardRectangleObservation: VNRectangleObservation?
     
+    private let resultsHandler: (String) -> ()
+    
+    init(resultsHandler: @escaping (String) -> ()) {
+        self.resultsHandler = resultsHandler
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     
     override func viewDidLoad() {
@@ -146,8 +156,21 @@ class MainViewController: UIViewController, AVCaptureVideoDataOutputSampleBuffer
     private func handleObservedPaymentCard(_ observation: VNRectangleObservation, in frame: CVImageBuffer) {
         if let trackedPaymentCardRectangle = self.trackPaymentCard(for: observation, in: frame) {
             DispatchQueue.main.async {
+                self.rectangleDrawing?.removeFromSuperlayer()
                 self.rectangleDrawing = self.createRectangleDrawing(trackedPaymentCardRectangle)
                 self.view.layer.addSublayer(self.rectangleDrawing!)
+                
+//                self.rectangleDrawing = self.createRectangleDrawing(trackedPaymentCardRectangle)
+//                self.view.layer.addSublayer(self.rectangleDrawing!)
+            }
+            
+            DispatchQueue.global(qos: .userInitiated).async {
+                if let extractedNumber = self.extractPaymentCardNumber(frame: frame, rectangle: observation)
+                {
+                    DispatchQueue.main.async {
+                        self.resultsHandler(extractedNumber)
+                    }
+                }
             }
         } else {
             self.paymentCardRectangleObservation = nil
