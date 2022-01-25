@@ -177,6 +177,11 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
     }
     
 
+    /* There is an issue where the app mostly does not work as planned,
+     as in it doesn't do a very good job at grabbing the 16 digit payment card number.
+     With aims to more frequently reach the goal, I'm going to try to edit extractPaymentCardNumber
+    */
+    
     private func extractPaymentCardNumber(frame: CVImageBuffer, rectangle: VNRectangleObservation) -> String? {
         
         let cardPositionInImage = VNImageRectForNormalizedRect(rectangle.boundingBox, CVPixelBufferGetWidth(frame), CVPixelBufferGetHeight(frame))
@@ -206,6 +211,7 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
         
         print("DIGITS RECOGNIZED: \(digitsRecognized)")
         print("16 Digits: \(String(describing: _16digits))")
+        
         let digits = _16digits ?? _4digits.joined()
         let digitsIsValid = (has16Digits || has4sections4digits) && self.checkDigits(digits)
         return digitsIsValid ? digits : nil
