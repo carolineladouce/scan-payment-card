@@ -230,7 +230,8 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
     private func checkDigits(_ digits: String) -> Bool {
         guard digits.count == 16,
               CharacterSet.decimalDigits.isSuperset(of: CharacterSet(charactersIn: digits)) else {
-                  print("CHECKSUM RETURN FALSE")
+                  // Console debugging statemtent:
+                  // print("CHECKSUM RETURN FALSE")
                   return false
               }
         
