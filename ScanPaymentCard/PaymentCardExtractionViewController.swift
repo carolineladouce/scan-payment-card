@@ -90,8 +90,8 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
             debugPrint("Unable to get image from sample buffer")
             return
         }
-        
-        print("Image recieved from frame")
+        // Console debugging statemtent:
+        // print("Image recieved from frame")
         
         DispatchQueue.main.async {
             self.rectangleDrawing?.removeFromSuperlayer()
@@ -118,12 +118,12 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
         guard let rectangle = (rectangleDetectionRequest.results as? [VNRectangleObservation])?.first,
               let text  = (textDetectionRequest.results as? [VNTextObservation])?.first,
               rectangle.boundingBox.contains(text.boundingBox) else {
-                  // No payment card rectangle detected
-                  print("No payment card rectangle detected")
+                  // Console debugging statemtent:
+                  // print("No payment card rectangle detected")
                   return nil
               }
-        
-        print("PAYMENT CARD RECTANGLE DETECTED")
+        // Console debugging statemtent:
+        // print("PAYMENT CARD RECTANGLE DETECTED")
         return rectangle
     }
     
@@ -177,11 +177,6 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
     }
     
     
-    /* There is an issue where the app mostly does not work as planned,
-     as in it doesn't do a very good job at grabbing the 16 digit payment card number.
-     With aims to more frequently reach the goal, I'm going to try to edit extractPaymentCardNumber
-     */
-    
     private func extractPaymentCardNumber(frame: CVImageBuffer, rectangle: VNRectangleObservation) -> String? {
         
         let cardPositionInImage = VNImageRectForNormalizedRect(rectangle.boundingBox, CVPixelBufferGetWidth(frame), CVPixelBufferGetHeight(frame))
@@ -196,32 +191,33 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
         try? stillImageRequestHandler.perform([request])
         
         guard let texts = request.results as? [VNRecognizedTextObservation], texts.count > 0 else {
-            // no text detected
+            // Console debugging statemtent:
+            // print(NO TEXT DETECTED")
             return nil
         }
         
         let textRecognized = texts
             .flatMap({ $0.topCandidates(10).map({ $0.string }) })
         
-//         Console debugging statemtent:
-//        print("Text RECOGNIZED: \(textRecognized)")
+        // Console debugging statemtent:
+        // print("Text RECOGNIZED: \(textRecognized)")
         
         var cardNumberString: String = ""
         var cardNumberStringNoSpaces: String = ""
         
         textRecognized.forEach { stringItemInTextRecognized in
             // Console debugging statemtent:
-//            print("\(stringItemInTextRecognized)")
+            // print("\(stringItemInTextRecognized)")
             
             if stringItemInTextRecognized.count == 19 {
                 // Console debugging statemtent:
-//                 print("STRING ITEM 19 CHARACTERS")
+                // print("STRING ITEM 19 CHARACTERS")
                 
                 cardNumberString = stringItemInTextRecognized
                 cardNumberStringNoSpaces = cardNumberString.filter {!$0.isWhitespace}
                 
                 // Console debugging statemtent:
-//                 print("CARD NUMBER NO SPACES:\(cardNumberStringNoSpaces)")
+                // print("CARD NUMBER NO SPACES:\(cardNumberStringNoSpaces)")
             }
         }
         
@@ -234,7 +230,7 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
     private func checkDigits(_ digits: String) -> Bool {
         guard digits.count == 16,
               CharacterSet.decimalDigits.isSuperset(of: CharacterSet(charactersIn: digits)) else {
-                   print("CHECKSUM RETURN FALSE")
+                  print("CHECKSUM RETURN FALSE")
                   return false
               }
         
