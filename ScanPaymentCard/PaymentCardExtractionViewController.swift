@@ -176,11 +176,11 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
         }
     }
     
-
+    
     /* There is an issue where the app mostly does not work as planned,
      as in it doesn't do a very good job at grabbing the 16 digit payment card number.
      With aims to more frequently reach the goal, I'm going to try to edit extractPaymentCardNumber
-    */
+     */
     
     private func extractPaymentCardNumber(frame: CVImageBuffer, rectangle: VNRectangleObservation) -> String? {
         
@@ -200,61 +200,41 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
             return nil
         }
         
-        let digitsRecognized = texts
+        let textRecognized = texts
             .flatMap({ $0.topCandidates(10).map({ $0.string }) })
-//            .map({ $0.trimmingCharacters(in: .whitespaces) })
-//            .filter({ CharacterSet.decimalDigits.isSuperset(of: CharacterSet(charactersIn: $0)) })
-//        let _16digits = digitsRecognized.first(where: { $0.count == 16 })
-//        let has16Digits = _16digits != nil
-//        let _4digits = digitsRecognized.filter({ $0.count == 4 })
-//        let has4sections4digits = _4digits.count == 4
         
-        print("DIGITS RECOGNIZED: \(digitsRecognized)")
-//        print("16 Digits: \(String(describing: _16digits))")
+//         Console debugging statemtent:
+//        print("Text RECOGNIZED: \(textRecognized)")
         
+        var cardNumberString: String = ""
+        var cardNumberStringNoSpaces: String = ""
         
-        //var index = 0
-        
-//        for index in 0...digitsRecognized.count - 1 {
-//
-//            if digitsRecognized[index].count == 19 {
-//                print("ALERT: \(digitsRecognized[index]) character count == 19")
-//            }
-//
-//            index += 1
-//        }
-        
-        var cardString: String = ""
-        var cardNumberNoSpaces: String = ""
-        
-        digitsRecognized.forEach { item in
-            print("\(item)")
+        textRecognized.forEach { stringItemInTextRecognized in
+            // Console debugging statemtent:
+//            print("\(stringItemInTextRecognized)")
             
-            if item.count == 19 {
-                print("ITEM 19 CHARACTERS")
+            if stringItemInTextRecognized.count == 19 {
+                // Console debugging statemtent:
+//                 print("STRING ITEM 19 CHARACTERS")
                 
-                cardString = item
-                cardNumberNoSpaces = cardString.filter {!$0.isWhitespace}
-                print("CARD NUMBER EDITED:\(cardNumberNoSpaces)")
+                cardNumberString = stringItemInTextRecognized
+                cardNumberStringNoSpaces = cardNumberString.filter {!$0.isWhitespace}
                 
-                
+                // Console debugging statemtent:
+//                 print("CARD NUMBER NO SPACES:\(cardNumberStringNoSpaces)")
             }
         }
         
-//        let digits = _16digits ?? _4digits.joined()
-//        let digitsIsValid = (has16Digits || has4sections4digits) && self.checkDigits(digits)
-        let cardNumberIsValid = (cardNumberNoSpaces.count == 16) && self.checkDigits(cardNumberNoSpaces)
+        let cardNumberIsValid = (cardNumberStringNoSpaces.count == 16) && self.checkDigits(cardNumberStringNoSpaces)
         
-//        return digitsIsValid ? digits : nil
-        
-        return cardNumberIsValid ? cardNumberNoSpaces : nil
+        return cardNumberIsValid ? cardNumberStringNoSpaces : nil
     }
     
-
+    
     private func checkDigits(_ digits: String) -> Bool {
         guard digits.count == 16,
               CharacterSet.decimalDigits.isSuperset(of: CharacterSet(charactersIn: digits)) else {
-                  print("CHECKSUM RETURN FALSE")
+                   print("CHECKSUM RETURN FALSE")
                   return false
               }
         
@@ -276,7 +256,6 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
             .reduce(0, { (res, next) in res + next })
         let checkDigitCalc = (sum * 9) % 10
         return Int(String(checksum))! == checkDigitCalc
-        
     }
     
     
