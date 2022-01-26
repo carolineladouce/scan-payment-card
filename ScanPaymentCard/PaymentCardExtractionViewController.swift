@@ -202,19 +202,52 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
         
         let digitsRecognized = texts
             .flatMap({ $0.topCandidates(10).map({ $0.string }) })
-            .map({ $0.trimmingCharacters(in: .whitespaces) })
-            .filter({ CharacterSet.decimalDigits.isSuperset(of: CharacterSet(charactersIn: $0)) })
-        let _16digits = digitsRecognized.first(where: { $0.count == 16 })
-        let has16Digits = _16digits != nil
-        let _4digits = digitsRecognized.filter({ $0.count == 4 })
-        let has4sections4digits = _4digits.count == 4
+//            .map({ $0.trimmingCharacters(in: .whitespaces) })
+//            .filter({ CharacterSet.decimalDigits.isSuperset(of: CharacterSet(charactersIn: $0)) })
+//        let _16digits = digitsRecognized.first(where: { $0.count == 16 })
+//        let has16Digits = _16digits != nil
+//        let _4digits = digitsRecognized.filter({ $0.count == 4 })
+//        let has4sections4digits = _4digits.count == 4
         
         print("DIGITS RECOGNIZED: \(digitsRecognized)")
-        print("16 Digits: \(String(describing: _16digits))")
+//        print("16 Digits: \(String(describing: _16digits))")
         
-        let digits = _16digits ?? _4digits.joined()
-        let digitsIsValid = (has16Digits || has4sections4digits) && self.checkDigits(digits)
-        return digitsIsValid ? digits : nil
+        
+        //var index = 0
+        
+//        for index in 0...digitsRecognized.count - 1 {
+//
+//            if digitsRecognized[index].count == 19 {
+//                print("ALERT: \(digitsRecognized[index]) character count == 19")
+//            }
+//
+//            index += 1
+//        }
+        
+        var cardString: String = ""
+        var cardNumberNoSpaces: String = ""
+        
+        digitsRecognized.forEach { item in
+            print("\(item)")
+            
+            if item.count == 19 {
+                print("ITEM 19 CHARACTERS")
+                
+                cardString = item
+                cardNumberNoSpaces = cardString.filter {!$0.isWhitespace}
+                print("CARD NUMBER EDITED:\(cardNumberNoSpaces)")
+                
+                
+            }
+        }
+        
+//        let digits = _16digits ?? _4digits.joined()
+//        let digitsIsValid = (has16Digits || has4sections4digits) && self.checkDigits(digits)
+        let cardNumberIsValid = (cardNumberNoSpaces.count == 16) && self.checkDigits(cardNumberNoSpaces)
+        
+//        return digitsIsValid ? digits : nil
+        
+        return cardNumberIsValid ? cardNumberNoSpaces : nil
     }
     
 
