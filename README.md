@@ -1,3 +1,145 @@
+This is my implementation of the [How to scan payment cards](https://anuragajwani.medium.com/how-to-scan-payment-cards-using-vision-framework-in-ios-9ab7394f7e94) tutorial by Anurag Ajwani (thanks Anurag!).  
+This project uses Swift, UIKit, AVFoundation, and Vision Framework.
+
+## My Changes
+
+Note: This project is currently designed to extract 16 digit payment card numbers. 
+Credit and debit cards in the Visa and Mastercard network contain 16 digit card numbers. 
+Amex cards contain 15 digits. 
+
+Through testing the project on my device, I confirmed that the program was able to:
+
+- Detect a rectangle with the same aspect ratio as a payment card
+
+- Draw a rectangle that outlines the detected rectangle
+
+- Display the rectangle drawing to the screen to show the user that the rectangle is recognized as fitting the aspect ratio of a payment card and that the detected rectangle is tracked through the camera feed images 
+
+- Extract and parse the text in the rectangle images
+
+
+### Issue Found: 
+
+While testing out the scanning feature, I found that ***the program was not detecting payment card numbers***.
+
+To fix this issue, I decided to make changes to func ```extractPaymentCardNumber```.
+
+For reference, here is the full code of func ```extractPaymentCardNumber``` from the tutorial:
+
+```swift
+   private func extractPaymentCardNumber(frame: CVImageBuffer, rectangle: VNRectangleObservation) -> String? {
+        
+        let cardPositionInImage = VNImageRectForNormalizedRect(rectangle.boundingBox, CVPixelBufferGetWidth(frame), CVPixelBufferGetHeight(frame))
+        let ciImage = CIImage(cvImageBuffer: frame)
+        let croppedImage = ciImage.cropped(to: cardPositionInImage)
+        
+        let request = VNRecognizeTextRequest()
+        request.recognitionLevel = .accurate
+        request.usesLanguageCorrection = false
+        
+        let stillImageRequestHandler = VNImageRequestHandler(ciImage: croppedImage, options: [:])
+        try? stillImageRequestHandler.perform([request])
+        
+        guard let texts = request.results as? [VNRecognizedTextObservation], texts.count > 0 else {
+            // no text detected
+            return nil
+        }
+        
+        let digitsRecognized = texts
+            .flatMap({ $0.topCandidates(10).map({ $0.string }) })
+            .map({ $0.trimmingCharacters(in: .whitespaces) })
+            .filter({ CharacterSet.decimalDigits.isSuperset(of: CharacterSet(charactersIn: $0)) })
+        let _16digits = digitsRecognized.first(where: { $0.count == 16 })
+        let has16Digits = _16digits != nil
+        let _4digits = digitsRecognized.filter({ $0.count == 4 })
+        let has4sections4digits = _4digits.count == 4
+        
+        let digits = _16digits ?? _4digits.joined()
+        let digitsIsValid = (has16Digits || has4sections4digits) && self.checkDigits(digits)
+        return digitsIsValid ? digits : nil
+    }
+```
+
+**Let's walk through what the original function does:**
+
+- Function Parameters: This function takes a ```CVImageBuffer``` and a ```VNRectangleObservation``` and returns a ```String``` containing the potential payment card number if found.
+- First, the function crops the image to the bounds of the detected payment card rectangle and performs an image analysis request on the cropped image.
+- Then, the function preforms a text recognition request on the image.
+- Next, ```digitsRecognized``` is assigned to store an array of text results from the text recognition request, with whitespaces trimmed and non-decimal numbers filtered out.
+- The function then aims to confirm if ```digitsRecognized``` contains a 16 character string.
+- The string is then passed to func ```checkDigits```, which first checks:
+   - if the string contains 16 characters
+   - if so, are 16 characters numbers  
+- If both of the above are true, ```checkDigits``` moves forward with performing the checksum algorithm on the string and returns the boolean result
+- Lastly, after receiving the result from ```checkDigits```, func ```extractPaymentCardNumber``` returns the the potential payment card number string if the string contains 16 digits and func```checkDigits``` returned true. Else func ```extractPaymentCardNumber``` returns nil. 
+
+
+
+#### Looking at the bottom of func ```extractPaymentCardNumber```: ####
+
+After performing the text recognition request on the image, 
+when assigning the value of ```digitsRecognized``` the program was breaking apart the potential payment card number into multiple separate strings that were, in practice, too small for it to reliably join the strings back together into one 16 character string. 
+
+Since the string that was being passed to func ```checkDigits``` was not a 16 character string, ```checkDigits``` immediately returned false and did not move forward with verifying the checksum of the potential payment card number.
+
+```swift
+        let digitsRecognized = texts
+            .flatMap({ $0.topCandidates(10).map({ $0.string }) })
+            .map({ $0.trimmingCharacters(in: .whitespaces) })
+            .filter({ CharacterSet.decimalDigits.isSuperset(of: CharacterSet(charactersIn: $0)) })
+        let _16digits = digitsRecognized.first(where: { $0.count == 16 })
+        let has16Digits = _16digits != nil
+        let _4digits = digitsRecognized.filter({ $0.count == 4 })
+        let has4sections4digits = _4digits.count == 4
+        
+        let digits = _16digits ?? _4digits.joined()
+        let digitsIsValid = (has16Digits || has4sections4digits) && self.checkDigits(digits)
+        return digitsIsValid ? digits : nil
+```
+
+
+### My solution:
+
+16 digit card numbers can translate as a string containing 19 characters that include 16 integers and 3 whitespaces. 
+
+So, I edited func ```extractPaymentCardNumber``` to check if a block of text in the detected rectangle image contains a string consisting of 19 characters. If the string contains 19 characters, the function then removes the whitespace characters from the string. 
+
+After removing the whitespace characters, the function checks if the string contains 16 characters (potentially a 16 digit card number) and calls ``` checkDigits``` to perform a checksum on the 16 character string. 
+
+
+```swift
+        let textRecognized = texts
+            .flatMap({ $0.topCandidates(10).map({ $0.string }) })
+        var cardNumberString: String = ""
+        var cardNumberStringNoSpaces: String = ""
+        
+        textRecognized.forEach { stringItemInTextRecognized in
+            if stringItemInTextRecognized.count == 19 {
+                cardNumberString = stringItemInTextRecognized
+                cardNumberStringNoSpaces = cardNumberString.filter {!$0.isWhitespace}
+            }
+        }
+        
+        let cardNumberIsValid = (cardNumberStringNoSpaces.count == 16) && self.checkDigits(cardNumberStringNoSpaces)
+        
+        return cardNumberIsValid ? cardNumberStringNoSpaces : nil
+```
+
+
+## What I learned
+
+- Standard payment card dimensions and card number formats
+
+- Setting a minimum and maximum aspect ratio to a ```VNDetectRectanglesRequest()``` to detect rectangular-shaped objects with a specific aspect ratio
+
+- Setting the aspect ratio with an error margin when detecting the payment card
+
+- Extracting and parsing text from a rectangle image 
+
+- Verifying a potential card number using Luhn’s algorithm (checksum)
+
+
+<!--
 # Scan Payment Card
 
 This is my implementation of the [How to scan payment cards](https://anuragajwani.medium.com/how-to-scan-payment-cards-using-vision-framework-in-ios-9ab7394f7e94) tutorial by Anurag Ajwani (thanks Anurag!).  
@@ -118,7 +260,7 @@ After removing the whitespace characters, it checks if the string contains 16 ch
 
 - Verifying a potential card number using Luhn’s algorithm (checksum)
 
-
+-->
 
 
 
