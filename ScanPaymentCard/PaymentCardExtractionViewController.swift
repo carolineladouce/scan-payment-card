@@ -198,26 +198,13 @@ class PaymentCardExtractionViewController: UIViewController, AVCaptureVideoDataO
         
         let textRecognized = texts
             .flatMap({ $0.topCandidates(10).map({ $0.string }) })
-        
-        // Console debugging statemtent:
-        // print("Text RECOGNIZED: \(textRecognized)")
-        
         var cardNumberString: String = ""
         var cardNumberStringNoSpaces: String = ""
         
         textRecognized.forEach { stringItemInTextRecognized in
-            // Console debugging statemtent:
-            // print("\(stringItemInTextRecognized)")
-            
             if stringItemInTextRecognized.count == 19 {
-                // Console debugging statemtent:
-                // print("STRING ITEM 19 CHARACTERS")
-                
                 cardNumberString = stringItemInTextRecognized
                 cardNumberStringNoSpaces = cardNumberString.filter {!$0.isWhitespace}
-                
-                // Console debugging statemtent:
-                // print("CARD NUMBER NO SPACES:\(cardNumberStringNoSpaces)")
             }
         }
         
