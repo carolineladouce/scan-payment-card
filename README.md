@@ -1,7 +1,7 @@
 # Scan Payment Card
 
 This is my implementation of the [How to scan payment cards](https://anuragajwani.medium.com/how-to-scan-payment-cards-using-vision-framework-in-ios-9ab7394f7e94) tutorial by Anurag Ajwani (thanks Anurag!).  
-This project uses Swift, UIKit, AVFoundation, and Vision Framework.
+This project is built programmatically using Swift, UIKit, AVFoundation, and Vision Framework.
 
 ## My Changes
 
@@ -11,15 +11,16 @@ Amex cards contain 15 digits.
 
 
 When testing the project on my device, I found that the program was not detecting payment card numbers.
+
 Through doing more digging and debugging, I confirmed that the program was able to:
 
-Detect a rectangle with the same aspect ratio as a payment card
+- Detect a rectangle with the same aspect ratio as a payment card
 
-Draw a rectangle that outlines the detected rectangle
+- Draw a rectangle that outlines the detected rectangle
 
-Display the rectangle drawing to the screen to show the user that the rectangle is recognized as fitting the aspect ratio of a payment card and that the detected rectangle is tracked through the camera feed images 
+- Display the rectangle drawing to the screen to show the user that the rectangle is recognized as fitting the aspect ratio of a payment card and that the detected rectangle is tracked through the camera feed images 
 
-Extract and parse the text in the rectangle images
+- Extract and parse the text in the rectangle images
 
 
 ### The issue: 
@@ -107,15 +108,15 @@ After removing the whitespace characters, it checks if the string contains 16 ch
 
 ## What I learned
 
-Standard payment card dimensions and card number formats
+- Standard payment card dimensions and card number formats
 
-Setting a minimum and maximum aspect ratio to a VNDetectRectanglesRequest() to detect rectangular-shaped objects with a specific aspect ratio
+- Setting a minimum and maximum aspect ratio to a VNDetectRectanglesRequest() to detect rectangular-shaped objects with a specific aspect ratio
 
-Setting the aspect ratio with an error margin when detecting the payment card
+- Setting the aspect ratio with an error margin when detecting the payment card
 
-Extracting and parsing text from a rectangle image 
+- Extracting and parsing text from a rectangle image 
 
-Verifying a potential card number using Luhn’s algorithm (checksum)
+- Verifying a potential card number using Luhn’s algorithm (checksum)
 
 
 
